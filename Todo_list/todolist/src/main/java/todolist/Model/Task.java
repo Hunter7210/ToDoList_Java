@@ -6,7 +6,7 @@ public class Task { // Task significa Tarefa
     boolean done; // done = Finalizado
 
     // construtor
-    public Task(String description) {//Construtor é um metodo que contem o mesmo nome da minha classe, serve para a construção. //Para metro são aqueles que estão entre parenteses
+    public Task(String description, boolean done) {//Construtor é um metodo que contem o mesmo nome da minha classe, serve para a construção. //Para metro são aqueles que estão entre parenteses
         
         this.description = description;
         this.done = false;

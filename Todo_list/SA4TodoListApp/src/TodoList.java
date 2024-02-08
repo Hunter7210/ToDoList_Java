@@ -102,7 +102,8 @@ public class TodoList extends JFrame { // Extends significa fazer uma subclasse 
 
         // TRATAMENTO DE EVENTOS
         addButton.addActionListener(e -> {
-            addTask(); // Chama o metodo addTask
+
+            // Chama o metodo addTask
         });
         deleteButton.addActionListener(e -> {
             deleteTask();

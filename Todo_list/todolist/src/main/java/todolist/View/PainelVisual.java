@@ -11,13 +11,19 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import todolist.Controller.ListControl;
+import todolist.Controller.Connection.ListDAO;
 import todolist.Model.Task;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -31,7 +37,7 @@ import java.awt.event.WindowListener;
 public class PainelVisual extends JFrame {
     // ATRIBUTOS
     private JPanel mainPanel;
-    private JTextField taskInputField;
+    private JTextField taskInputField, taskInputField2;
     private JButton addButton;
 
     // Componenetes novos
@@ -42,6 +48,10 @@ public class PainelVisual extends JFrame {
     private JList<String> taskList; // JList é uma lista grafica, no caso pega so elementos da classe Task lá em
                                     // baixo
     private DefaultListModel<String> listModel;
+    // Atributos
+    private DefaultTableModel tableModel;
+
+    private JTable table;
 
     private JButton deleteButton;
     private JButton markDoneButton;
@@ -63,11 +73,12 @@ public class PainelVisual extends JFrame {
 
         // Inicializa a lista de tasks e a lista de tasks concluídas
         tasks = new ArrayList<>(); // Task é o nome da minha list, não é possível instanciar objeots da classe list
-        listModel = new DefaultListModel<>(); // Seta os modelos
+        listModel = new DefaultTableModel<>(); // Seta os modelos
         taskList = new JList<>(listModel);
 
         // Inicializa campos de entrada, botões e JComboBox
         taskInputField = new JTextField();
+        taskInputField2 = new JTextField();
         addButton = new JButton("Adicionar");
         deleteButton = new JButton("Excluir");
         markDoneButton = new JButton("Concluir");
@@ -77,6 +88,7 @@ public class PainelVisual extends JFrame {
         // Configuração do painel de entrada
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(taskInputField, BorderLayout.CENTER);
+        inputPanel.add(taskInputField2, BorderLayout.CENTER);
         inputPanel.add(addButton, BorderLayout.EAST);
 
         // Configuração do painel de botões
@@ -94,7 +106,12 @@ public class PainelVisual extends JFrame {
         // Adiciona o painel principal à janela
         this.add(mainPanel);
 
+        ListControl controlList = new ListControl(tasks, tableModel, table);
+        new ListDAO().criarTabela();
+
+        atualizarTabela();
         // Eventos
+
         taskList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -104,14 +121,47 @@ public class PainelVisual extends JFrame {
                     if (index >= 0 && index < tasks.size()) {
                         Task task = tasks.get(index); // Pegou o elemento do arraylist
                         task.setDone(true); // Usando o Setters do outro metodo
-                        ListControl control = new ListControl(tasks, null, null);
+                        controlList.cadastrar(taskInputField.getText(), taskInputField2.getText());
                     }
                 }
             }
         });
 
         // EVENTO TECLADO
-        taskInputField.addKeyListener(new KeyAdapter() {
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Cadastrando a tarefa
+                // Adiciona uma nova task à lista de tasks
+                int funciona; // Variavel criada para receber valor do JOptionPane
+                funciona = JOptionPane.showConfirmDialog(null, "Deseja realmente adicionar tarefa:");
+                // Para funcionar tanto no apertar do botão quanto para ao pressionar a tecla
+                // ENTER
+                if (funciona == JOptionPane.YES_OPTION) { // Se a escolha for SIM
+                    System.out.println("YES");
+                    String taskDescription = taskInputField.getText();// TRIM = remove espaços vazios
+
+                    if (!taskDescription.isEmpty()) { // Se estiver diferente de vazio
+                        System.out.println("Passou if");
+                        Task newTask = new Task(taskDescription, false);
+                        tasks.add(newTask); // Adicionando novas tarefas ao Array
+                        System.out.println("Add tarefas");
+                        controlList.cadastrar(taskDescription, "3");
+
+                        taskInputField.setText("");
+                    } else {
+                        System.out.println("DEU ERRADO");
+                    }
+                } else if (funciona == JOptionPane.NO_OPTION) { // Se a escolha for NÃO
+                    System.out.println("NO");
+                    taskInputField.setText("");
+                } // Se a escolha for CANCEL o JOption ira apenas fechar.
+
+            }
+
+        });
+
+       /*  addButton.addKeyListener(new KeyAdapter() {
             // Adionar uma tarefa apertando a tecla ENTER
             public void keyPressed(KeyEvent e) {
                 // if para comparar se o que foi digitado é igual a tecla Enter
@@ -120,9 +170,9 @@ public class PainelVisual extends JFrame {
                     // Chama o metodo addTask.
                     try {
                         if (!taskInputField.getText().isEmpty()) {
-                            ListControl control = new ListControl(tasks, null, null);
+
                             // Marca a task selecionada como concluída
-                            control.cadastrar(getWarningString(), getName());
+                            controlList.cadastrar(taskInputField.getText(), taskInputField2.getText());
                         }
 
                     } catch (Exception f) {
@@ -132,8 +182,9 @@ public class PainelVisual extends JFrame {
                 }
 
             }
-        });
 
+        });
+ */
         this.addWindowListener(new WindowAdapter() {
             // Metodo criado para inicio
             @Override
@@ -149,28 +200,17 @@ public class PainelVisual extends JFrame {
                 }
             }
         });
+    }
 
-        // Cadastrando a tarefa
-        // Adiciona uma nova task à lista de tasks
-        int funciona; // Variavel criada para receber valor do JOptionPane
-        funciona = JOptionPane.showConfirmDialog(null, "Deseja realmente adicionar tarefa:");
-        // Para funcionar tanto no apertar do botão quanto para ao pressionar a tecla
-        // ENTER
-        if (funciona == JOptionPane.YES_OPTION) { // Se a escolha for SIM
-            String taskDescription = taskInputField.getText().trim();// TRIM = remove espaços vazios
-            if (!taskDescription.isEmpty()) { // Se estiver diferente de vazio
-                Task newTask = new Task(taskDescription);
-                tasks.add(newTask); // Adicionando novas tarefas ao Array
-
-                ListControl control = new ListControl(tasks, null, null);
-                control.atualizar(taskDescription, taskDescription, taskDescription);
-
-                taskInputField.setText("");
-            }
-        } else if (funciona == JOptionPane.NO_OPTION) { // Se a escolha for NÃO
-            taskInputField.setText("");
-        } // Se a escolha for CANCEL o JOption ira apenas fechar.
-
+    // Método para atualizar a tabela de exibição com dados do banco de dados
+    private void atualizarTabela() {
+        tableModel.setRowCount(0); // Limpa todas as linhas existentes na tabela
+        tasks = new ListDAO().listarTodos();
+        // Obtém os carros atualizados do banco de dados
+        for (Task task : tasks) {
+            // Adiciona os dados de cada carro como uma nova linha na tabela Swing
+            tableModel.addRow(new Object[] {task.getDescription(), task.isDone()});
+        }
     }
 
     public void run() {

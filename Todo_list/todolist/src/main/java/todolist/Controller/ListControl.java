@@ -3,6 +3,7 @@ package todolist.Controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -20,6 +21,8 @@ public class ListControl {
     // Atributos
     private List<Task> tasks;
     private DefaultTableModel tableModel;
+    private DefaultListModel<String> listModel;
+
     private JTable table;
 
     // Construtor
@@ -31,13 +34,13 @@ public class ListControl {
     }
 
     // Método para atualizar a tabela de exibição com dados do banco de dados
-    private void atualizarTabela() {
+    public void atualizarTabela() {
         tableModel.setRowCount(0); // Limpa todas as linhas existentes na tabela
         tasks = new ListDAO().listarTodos();
         // Obtém os carros atualizados do banco de dados
         for (Task tarefa : tasks) {
             // Adiciona os dados de cada carro como uma nova linha na tabela Swing
-            tableModel.addRow(new Object[] { tarefa.getDescription(), tarefa.isDone() });
+            tableModel.addRow(new Object[] { tarefa.getDescription(), tarefa.isDone()});
         }
     }
 
@@ -73,7 +76,7 @@ public class ListControl {
         if (funciona == JOptionPane.YES_OPTION) { // Se a escolha for SIM
             String taskDescription = inputTextField.getText().trim();// TRIM = remove espaços vazios
             if (!taskDescription.isEmpty()) { // Se estiver diferente de vazio
-                Task newTask = new Task(taskDescription);
+                Task newTask = new Task(taskDescription, false);
                 tasks.add(newTask); // Adicionando novas tarefas ao Array
                 updateTaskList();// Chama o outro metodo
                 inputTextField.setText("");
@@ -109,20 +112,21 @@ public class ListControl {
         }
     }
 
-    // READ, R do CRUD
-    private void filterTasks(JComboBox combobox, ) {
-        // Filtra as tasks com base na seleção do JComboBox
-        String filter = (String) combobox.getSelectedItem();
-        listModel.clear();
-        // FOREACH percorre o meu Arraylist
-        for (Task task : tasks) {
-            if (filter.equals("Todas") || (filter.equals("Ativas") &&
-                    !task.isDone()) || (filter.equals("Concluídas") && task.isDone())) {
-                listModel.addElement(task.getDescription());
-            }
-        }
-    }
-
+    
+     // READ, R do CRUD
+     private void filterTasks(JComboBox combobox) {
+     // Filtra as tasks com base na seleção do JComboBox
+     String filter = (String) combobox.getSelectedItem();
+     listModel.clear();
+     // FOREACH percorre o meu Arraylist
+     for (Task task : tasks) {
+     if (filter.equals("Todas") || (filter.equals("Ativas") &&
+     !task.isDone()) || (filter.equals("Concluídas") && task.isDone())) {
+     listModel.addElement(task.getDescription());
+     }
+     }
+     }
+    
     private void clearCompletedTasks() {
         // Limpa todas as tasks concluídas da lista
         List<Task> completedTasks = new ArrayList<>();
@@ -140,12 +144,11 @@ public class ListControl {
         listModel.clear();
         for (Task task : tasks) {
             if (task.isDone()) {
-                listModel
-                        .addElement("<html><font color='green'>" + task.getDescription() + "(Concluida)</font></html>");
+                listModel.addElement("<html><font color='green'>" + task.getDescription() + "(Concluida)</font></html>");
             } else {
                 listModel.addElement(task.getDescription());
             }
-            // listModel é a lista simplificada chamado ternário
+            // tableModel é a lista simplificada chamado ternário
 
         }
     }

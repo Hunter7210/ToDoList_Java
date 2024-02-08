@@ -24,8 +24,8 @@ public class ListDAO {
     }
 
     // criar Tabela
-    public void criaTabela() {
-        String query = "CREATE TABLE IF NOT EXISTS tarefas_todolist (TAREFA VARCHAR(255),CONCLUIDA ENUM(C,P), ID SERIAL PRIMARY KEY)";
+    public void criarTabela() {
+        String query = "CREATE TABLE IF NOT EXISTS tarefas_todolist (TAREFA VARCHAR(255), CONCLUIDA VARCHAR(255), ID SERIAL PRIMARY KEY)";
         try (Statement stmt = this.connection.createStatement()) {
             stmt.execute(query);
             System.out.println("Tabela criada com sucesso.");
@@ -45,7 +45,7 @@ public class ListDAO {
         tarefa = new ArrayList<>();
         // Cria uma lista para armazenar os carros recuperados do banco de dados
         try {
-            String query = "SELECT * FROM carros_lojacarros";
+            String query = "SELECT * FROM tarefas_todolist";
             stmt = connection.prepareStatement(query);
             // Prepara a consulta SQL para selecionar todos os registros da tabela
             rs = stmt.executeQuery();
@@ -54,7 +54,8 @@ public class ListDAO {
                 // Para cada registro no ResultSet, cria um objeto Carros com os valores do
                 // registro
                 Task tarefas = new Task(
-                        rs.getString("Tarefa"));
+                        rs.getString("description"),
+                        rs.getBoolean("done"));
                 tarefa.add(tarefas); // Adiciona o objeto Carros à lista de carros
             }
         } catch (SQLException ex) {
@@ -70,7 +71,7 @@ public class ListDAO {
     public void cadastrar(String tarefa, String concluida) {
         PreparedStatement stmt = null;
         // Define a instrução SQL parametrizada para cadastrar na tabela
-        String query = "INSERT INTO tarefas_todolist (tarefa, concluida, id) VALUES (?, ?)";
+        String query = "INSERT INTO tarefas_todolist (tarefa, concluida) VALUES (?, ?)";
 
         try {
             stmt = connection.prepareStatement(query);
@@ -117,12 +118,12 @@ public class ListDAO {
         }
     }
 
-     // Apagar dados do banco
-     public void apagar(String id) {
+    // Apagar dados do banco
+    public void apagar(String id) {
         PreparedStatement stmt = null;
         // Define a instrução SQL parametrizada para apagar dados pela id
         String query = "DELETE FROM tarefas_todolist WHERE id = ?";
-        
+
         try {
             stmt = connection.prepareStatement(query);
             stmt.setString(1, id);
@@ -130,7 +131,7 @@ public class ListDAO {
             System.out.println("Dado apagado com sucesso");
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao apagar dados no banco de dados.", e);
-        } 
+        }
         ConnectionFactory.closeConnection(connection, stmt);
     }
 
