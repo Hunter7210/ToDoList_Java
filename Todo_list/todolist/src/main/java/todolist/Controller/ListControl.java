@@ -40,12 +40,12 @@ public class ListControl {
         // Obtém os carros atualizados do banco de dados
         for (Task tarefa : tasks) {
             // Adiciona os dados de cada carro como uma nova linha na tabela Swing
-            tableModel.addRow(new Object[] { tarefa.getDescription(), tarefa.isDone()});
+            tableModel.addRow(new Object[] { tarefa.getDescription(), tarefa.isDone(), tarefa.getGetId()});
         }
     }
 
     // Método para cadastrar um novo carro no banco de dados
-    public void cadastrar(String tarefa, String concluida) {
+    public void cadastrar(String tarefa, Boolean concluida) {
         new ListDAO().cadastrar(tarefa, concluida);
         // Chama o método de cadastro no banco de dados
         atualizarTabela(); // Atualiza a tabela de exibição após o cadastro
@@ -53,7 +53,7 @@ public class ListControl {
     }
 
     // Método para atualizar os dados de um carro no banco de dados
-    public void atualizar(String tarefa, String concluida, String id) {
+    public void atualizar(String tarefa, Boolean concluida, int id) {
         new ListDAO().atualizar(tarefa, concluida, id);
         // Chama o método de atualização no banco de dados
         atualizarTabela(); // Atualiza a tabela de exibição após a atualização
@@ -66,7 +66,7 @@ public class ListControl {
         atualizarTabela(); // Atualiza a tabela de exibição após a exclusão
     }
 
-    // CREATE, C DO CRUD
+   /*  // CREATE, C DO CRUD
     private void addTask(JTextField inputTextField) {
         // Adiciona uma nova task à lista de tasks
         int funciona; // Variavel criada para receber valor do JOptionPane
@@ -76,7 +76,7 @@ public class ListControl {
         if (funciona == JOptionPane.YES_OPTION) { // Se a escolha for SIM
             String taskDescription = inputTextField.getText().trim();// TRIM = remove espaços vazios
             if (!taskDescription.isEmpty()) { // Se estiver diferente de vazio
-                Task newTask = new Task(taskDescription, false);
+                Task newTask = new Task(taskDescription, false,);
                 tasks.add(newTask); // Adicionando novas tarefas ao Array
                 updateTaskList();// Chama o outro metodo
                 inputTextField.setText("");
@@ -85,7 +85,7 @@ public class ListControl {
             inputTextField.setText("");
         } // Se a escolha for CANCEL o JOption ira apenas fechar.
     }
-
+ */
     // DELETE, D DO CRUD
     private void deleteTask(JList<String> taskList) {
         // Exclui a task selecionada da lista de tasks
@@ -102,7 +102,7 @@ public class ListControl {
     }
 
     // UPDATE, U do CRUD
-    private void markTaskDone(JList<String> taskList) {
+    public void markTaskDone(JList<String> taskList) {
         // Marca a task selecionada como concluída
         int selectedIndex = taskList.getSelectedIndex();
         if (selectedIndex >= 0 && selectedIndex < tasks.size()) {
@@ -112,21 +112,20 @@ public class ListControl {
         }
     }
 
-    
-     // READ, R do CRUD
-     private void filterTasks(JComboBox combobox) {
-     // Filtra as tasks com base na seleção do JComboBox
-     String filter = (String) combobox.getSelectedItem();
-     listModel.clear();
-     // FOREACH percorre o meu Arraylist
-     for (Task task : tasks) {
-     if (filter.equals("Todas") || (filter.equals("Ativas") &&
-     !task.isDone()) || (filter.equals("Concluídas") && task.isDone())) {
-     listModel.addElement(task.getDescription());
-     }
-     }
-     }
-    
+    // READ, R do CRUD
+    private void filterTasks(JComboBox combobox) {
+        // Filtra as tasks com base na seleção do JComboBox
+        String filter = (String) combobox.getSelectedItem();
+        listModel.clear();
+        // FOREACH percorre o meu Arraylist
+        for (Task task : tasks) {
+            if (filter.equals("Todas") || (filter.equals("Ativas") &&
+                    !task.isDone()) || (filter.equals("Concluídas") && task.isDone())) {
+                listModel.addElement(task.getDescription());
+            }
+        }
+    }
+
     private void clearCompletedTasks() {
         // Limpa todas as tasks concluídas da lista
         List<Task> completedTasks = new ArrayList<>();
@@ -144,7 +143,8 @@ public class ListControl {
         listModel.clear();
         for (Task task : tasks) {
             if (task.isDone()) {
-                listModel.addElement("<html><font color='green'>" + task.getDescription() + "(Concluida)</font></html>");
+                listModel
+                        .addElement("<html><font color='green'>" + task.getDescription() + "(Concluida)</font></html>");
             } else {
                 listModel.addElement(task.getDescription());
             }

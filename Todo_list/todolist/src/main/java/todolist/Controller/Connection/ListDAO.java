@@ -25,7 +25,7 @@ public class ListDAO {
 
     // criar Tabela
     public void criarTabela() {
-        String query = "CREATE TABLE IF NOT EXISTS tarefas_todolist (TAREFA VARCHAR(255), CONCLUIDA VARCHAR(255), ID SERIAL PRIMARY KEY)";
+        String query = "CREATE TABLE IF NOT EXISTS tarefas_todolist (TAREFA VARCHAR(255),CONCLUIDA VARCHAR(255),ID SERIAL PRIMARY KEY)";
         try (Statement stmt = this.connection.createStatement()) {
             stmt.execute(query);
             System.out.println("Tabela criada com sucesso.");
@@ -54,8 +54,9 @@ public class ListDAO {
                 // Para cada registro no ResultSet, cria um objeto Carros com os valores do
                 // registro
                 Task tarefas = new Task(
-                        rs.getString("description"),
-                        rs.getBoolean("done"));
+                        rs.getString("tarefa"),
+                        rs.getBoolean("concluida"),
+                        rs.getInt("id"));
                 tarefa.add(tarefas); // Adiciona o objeto Carros à lista de carros
             }
         } catch (SQLException ex) {
@@ -68,7 +69,7 @@ public class ListDAO {
     }
 
     // Cadastrar Carro no banco
-    public void cadastrar(String tarefa, String concluida) {
+    public void cadastrar(String tarefa, Boolean concluida) {
         PreparedStatement stmt = null;
         // Define a instrução SQL parametrizada para cadastrar na tabela
         String query = "INSERT INTO tarefas_todolist (tarefa, concluida) VALUES (?, ?)";
@@ -77,7 +78,7 @@ public class ListDAO {
             stmt = connection.prepareStatement(query);
 
             stmt.setString(1, tarefa);
-            stmt.setString(2, concluida);
+            stmt.setBoolean(2, concluida);
             stmt.executeUpdate();
             System.out.println("Dados inseridos com sucesso");
 
@@ -90,7 +91,7 @@ public class ListDAO {
     }
 
     // Atualizar dados no banco
-    public void atualizar(String tarefa, String concluida, String id) {
+    public void atualizar(String tarefa, Boolean concluida, int id) {
         PreparedStatement stmt = null;
         // Define a instrução SQL parametrizada para atualizar dados pela placa
         String query = "UPDATE tarefas_todolist SET tarefa = ?, concluida = ? WHERE id = ?"; // Placa é a minha chave
@@ -104,9 +105,9 @@ public class ListDAO {
         try {
             stmt = connection.prepareStatement(query);
             stmt.setString(1, tarefa);
-            stmt.setString(2, concluida);
+            stmt.setBoolean(2, concluida);
             // placa é chave primaria não pode ser alterada
-            stmt.setString(3, id);
+            stmt.setInt(3, id);
             stmt.executeUpdate();
             System.out.println("Dados atualizados com sucesso");
 

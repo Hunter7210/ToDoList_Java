@@ -37,7 +37,7 @@ import java.awt.event.WindowListener;
 public class PainelVisual extends JFrame {
     // ATRIBUTOS
     private JPanel mainPanel;
-    private JTextField taskInputField, taskInputField2;
+    private JTextField taskInputField;
     private JButton addButton;
 
     // Componenetes novos
@@ -73,22 +73,23 @@ public class PainelVisual extends JFrame {
 
         // Inicializa a lista de tasks e a lista de tasks concluídas
         tasks = new ArrayList<>(); // Task é o nome da minha list, não é possível instanciar objeots da classe list
-        listModel = new DefaultTableModel<>(); // Seta os modelos
+        tableModel = new DefaultTableModel(); // Seta os modelos
+        listModel = new DefaultListModel<>();
         taskList = new JList<>(listModel);
 
         // Inicializa campos de entrada, botões e JComboBox
         taskInputField = new JTextField();
-        taskInputField2 = new JTextField();
+
         addButton = new JButton("Adicionar");
         deleteButton = new JButton("Excluir");
         markDoneButton = new JButton("Concluir");
-        filterComboBox = new JComboBox<>(new String[] { "Todas", "Ativas", "Concluídas" });
+        filterComboBox = new JComboBox<>(new String[] { "Todas", "Concluídas" });
         clearCompletedButton = new JButton("Limpar Concluídas");
 
         // Configuração do painel de entrada
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(taskInputField, BorderLayout.CENTER);
-        inputPanel.add(taskInputField2, BorderLayout.CENTER);
+
         inputPanel.add(addButton, BorderLayout.EAST);
 
         // Configuração do painel de botões
@@ -98,9 +99,18 @@ public class PainelVisual extends JFrame {
         buttonPanel.add(filterComboBox);
         buttonPanel.add(clearCompletedButton);
 
+        // tabela de carros
+        JScrollPane jSPane = new JScrollPane();
+
+        tableModel = new DefaultTableModel(new Object[][] {},
+                new String[] { "Atividade", "Concluido" });
+        table = new JTable(tableModel);
+
+        jSPane.setViewportView(table);
+
         // Adiciona os componentes ao painel principal
         mainPanel.add(inputPanel, BorderLayout.NORTH);
-        mainPanel.add(new JScrollPane(taskList), BorderLayout.CENTER);// ScrollPane, é baseada na taskList
+        mainPanel.add(jSPane, BorderLayout.CENTER);// ScrollPane, é baseada na taskList
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Adiciona o painel principal à janela
@@ -121,7 +131,7 @@ public class PainelVisual extends JFrame {
                     if (index >= 0 && index < tasks.size()) {
                         Task task = tasks.get(index); // Pegou o elemento do arraylist
                         task.setDone(true); // Usando o Setters do outro metodo
-                        controlList.cadastrar(taskInputField.getText(), taskInputField2.getText());
+                        controlList.cadastrar(taskInputField.getText(), false);
                     }
                 }
             }
@@ -143,10 +153,10 @@ public class PainelVisual extends JFrame {
 
                     if (!taskDescription.isEmpty()) { // Se estiver diferente de vazio
                         System.out.println("Passou if");
-                        Task newTask = new Task(taskDescription, false);
+                        Task newTask = new Task(taskDescription, false,0);
                         tasks.add(newTask); // Adicionando novas tarefas ao Array
                         System.out.println("Add tarefas");
-                        controlList.cadastrar(taskDescription, "3");
+                        controlList.cadastrar(taskDescription, false);
 
                         taskInputField.setText("");
                     } else {
@@ -161,30 +171,59 @@ public class PainelVisual extends JFrame {
 
         });
 
-       /*  addButton.addKeyListener(new KeyAdapter() {
-            // Adionar uma tarefa apertando a tecla ENTER
-            public void keyPressed(KeyEvent e) {
-                // if para comparar se o que foi digitado é igual a tecla Enter
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) { // VK.ENTER é o codigo para a tecla enter
-                    // Perguntar se deseja adcionar
-                    // Chama o metodo addTask.
-                    try {
-                        if (!taskInputField.getText().isEmpty()) {
+        /*
+         * addButton.addKeyListener(new KeyAdapter() {
+         * // Adionar uma tarefa apertando a tecla ENTER
+         * public void keyPressed(KeyEvent e) {
+         * // if para comparar se o que foi digitado é igual a tecla Enter
+         * if (e.getKeyCode() == KeyEvent.VK_ENTER) { // VK.ENTER é o codigo para a
+         * tecla enter
+         * // Perguntar se deseja adcionar
+         * // Chama o metodo addTask.
+         * try {
+         * if (!taskInputField.getText().isEmpty()) {
+         * 
+         * // Marca a task selecionada como concluída
+         * controlList.cadastrar(taskInputField.getText(), taskInputField2.getText());
+         * }
+         * 
+         * } catch (Exception f) {
+         * JOptionPane.showMessageDialog(null, "erro");
+         * // estiver vazio
+         * }
+         * }
+         * 
+         * }
+         * 
+         * });
+         */
+        markDoneButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Obtém o índice da linha selecionada na tabela
+                int selectedRow = table.getSelectedRow();
 
-                            // Marca a task selecionada como concluída
-                            controlList.cadastrar(taskInputField.getText(), taskInputField2.getText());
-                        }
+                if (selectedRow != -1) { // Se uma linha estiver selecionada
+                    // Converte o índice da linha da exibição para o índice do modelo
+                    int modelRowIndex = table.convertRowIndexToModel(selectedRow);
 
-                    } catch (Exception f) {
-                        JOptionPane.showMessageDialog(null, "erro");
-                        // estiver vazio
-                    }
+                    // Obtém a Task associada à linha selecionada
+                    Task task = tasks.get(modelRowIndex);
+
+                    // Marca a tarefa como concluída
+                    task.setDone(true);
+
+                    // Atualiza a exibição da tabela
+                    tableModel.setValueAt(true, modelRowIndex, 1); // Atualiza o valor da coluna "Concluido"
+
+                    // Atualiza o valor da coluna "concluído" no banco de dados
+                    new ListDAO().atualizar(task.getDescription(), true, task.getGetId()); // Supondo que task.getId()
+                                                                                        // retorna o ID da tarefa no
+                                                                                        // banco de dados
                 }
-
             }
-
         });
- */
+
         this.addWindowListener(new WindowAdapter() {
             // Metodo criado para inicio
             @Override
@@ -209,7 +248,7 @@ public class PainelVisual extends JFrame {
         // Obtém os carros atualizados do banco de dados
         for (Task task : tasks) {
             // Adiciona os dados de cada carro como uma nova linha na tabela Swing
-            tableModel.addRow(new Object[] {task.getDescription(), task.isDone()});
+            tableModel.addRow(new Object[] { task.getDescription(), task.isDone() });
         }
     }
 
